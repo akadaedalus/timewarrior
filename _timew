@@ -2,12 +2,29 @@
 #
 # Bash completion for TimeWarrior
 #
-# Copyright (C) 2017  Thomas Lauf
+# Copyright (C) 2017 - 2019  Thomas Lauf
 # taken from https://github.com/lauft/timew-bashcompletion
 #
 function __get_commands()
 {
-  echo "cancel config continue day delete diagnostics export extensions gaps get help join lengthen month move report shorten show split start stop summary tag tags track untag week"
+  echo "annotate cancel config continue day delete diagnostics export extensions gaps get help join lengthen modify month move report shorten show split start stop summary tag tags track undo untag week"
+}
+
+function __get_subcommands()
+{
+  case "${1}" in
+    modify)
+      echo "end start"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+function __get_help_items()
+{
+  echo "$( __get_commands ) interval hints date duration dom"
 }
 
 function __get_options()
@@ -41,6 +58,36 @@ function __has_entered_id()
   return 1
 }
 
+function __has_entered_subcommand()
+{
+  local subcommands=$( __get_subcommands "${1}" )
+
+  for word in "${COMP_WORDS[@]}" ; do
+    for cmd in ${subcommands} ; do
+      if [[ "${word}" == "${cmd}" ]] ; then
+        return 0
+      fi
+    done
+  done
+
+  return 1
+}
+
+function __has_entered_help_item()
+{
+  local items=$( __get_help_items )
+
+  for word in "${COMP_WORDS[@]:2}" ; do
+    for item in ${items} ; do
+      if [[ "${word}" == "${item}" ]] ; then
+        return 0
+      fi
+    done
+  done
+
+  return 1
+}
+
 function __is_entering_id()
 {
   if [[ "${COMP_WORDS[COMP_CWORD]}" =~ @[0-9]* ]] ; then
@@ -58,17 +105,21 @@ function _timew()
   first="${COMP_WORDS[1]}"
 
   case "${first}" in
-    cancel|config|diagnostics|day|extensions|get|month|show|week)
+    cancel|config|diagnostics|day|extensions|get|month|show|undo|week)
       wordlist=""
       ;;
-    continue|delete|join|lengthen|move|shorten|split)
+    annotate|continue|delete|join|lengthen|move|shorten|split)
       wordlist=$( __get_ids )
       ;;
-    export|gaps|start|stop|tags|track)
+    export|gaps|start|stop|summary|tags|track)
       wordlist=$( __get_tags )
       ;;
-    summary)
-      wordlist="$( __get_tags ) :yesterday :day :week :month :quarter :year :lastweek :lastmonth :lastquarter :lastyear today"
+    modify)
+      if __has_entered_subcommand "${first}" ; then
+        wordlist=$( __get_ids )
+      else
+        wordlist=$( __get_subcommands "${first}" )
+      fi
       ;;
     tag|untag)
       if __is_entering_id ; then
@@ -83,7 +134,11 @@ function _timew()
       wordlist=$( __get_extensions )
       ;;
     help)
-      wordlist="$( __get_commands ) interval hints date duration dom"
+      if __has_entered_help_item ; then
+        wordlist=""
+      else
+        wordlist=$( __get_help_items )
+      fi
       ;;
     --*)
       wordlist=$( __get_options )
