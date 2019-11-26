@@ -44,6 +44,7 @@ History
 ------------------------------------------------------------------------------
 
 * April 2018: Sven Hergenhahn put this together
+* November 2019: akadaedalus updated for new arguments, preferred semantics for starting time
 
 ------------------------------------------------------------------------------
 [1]: https://timewarrior.net/

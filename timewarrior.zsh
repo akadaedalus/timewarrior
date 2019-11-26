@@ -10,7 +10,7 @@ alias twsi='timew summary :ids'
 alias twsy='timew summary :yesterday'
 alias twsw='timew summary :week'
 
-alias twa='timew start'
+alias twi='timew start'
 alias two='timew stop'
 alias twc='timew continue'
 alias twt='timew track'
